@@ -1,0 +1,51 @@
+{
+  "name": "dsh-search-in-file",
+  "version": "0.1.0",
+  "description": "In-file search for the DeepSeek Harness right Sidebar: highlight matches in the document preview and the changes-review diff, with whole-word and regex modes.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "find",
+    "search",
+    "regex",
+    "sidebar",
+    "diff"
+  ],
+  "author": "kix6lj",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kix6lj/dsh-search-in-file.git"
+  },
+  "homepage": "https://github.com/kix6lj/dsh-search-in-file#readme",
+  "bugs": {
+    "url": "https://github.com/kix6lj/dsh-search-in-file/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-sidebar-documentpreview"
+      ]
+    }
+  }
+}

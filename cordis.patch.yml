@@ -1,0 +1,8 @@
+# dsh-search-in-file: install the plugin row into the profile composition.
+#
+# The bundle is self-contained: installing it with `dsh plugin add` reads this
+# patch, which inserts the one row the plugin needs. No Host configuration is
+# required; every switch lives in the browser's find bar.
+- insert:
+    - id: dsh-search-in-file
+      name: dsh-search-in-file
