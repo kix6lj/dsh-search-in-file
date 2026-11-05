@@ -257,6 +257,25 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * The text currently selected inside one surface, if any. The find bar
+     * opens with it, the way editor find boxes do.
+     * @param root - the surface's searchable element.
+     * @returns the single-line, trimmed selection, or an empty string.
+     */
+    function selectedTextIn(root) {
+      if (root === null) return ''
+      const selection = window.getSelection()
+      if (selection === null || selection.isCollapsed || selection.rangeCount === 0) return ''
+      const text = selection.toString().replace(/\s*\n\s*/gu, ' ').trim()
+      if (text === '') return ''
+      const range = selection.getRangeAt(0)
+      const node = range.commonAncestorContainer
+      const element = node.nodeType === Node.TEXT_NODE ? node.parentElement : node
+      if (element === null || !root.contains(element)) return ''
+      return text
+    }
+
+    /**
      * Collect the text nodes a find bar searches: everything inside the root
      * except controls and inert nodes.
      * @param root - the searchable element.
@@ -670,6 +689,13 @@ window.__ModuleLoader__.load({
         return found
       }, [])
 
+      /** Seed the input with the preview's current selection, when there is one. */
+      const seedFromSelection = React.useCallback(() => {
+        const seed = selectedTextIn(bodyOf())
+        if (seed !== '') setQuery(seed)
+        return seed !== ''
+      }, [])
+
       // Search after a pause in typing; reveal the first match.
       React.useEffect(() => {
         if (!open || query === '') {
@@ -752,7 +778,8 @@ window.__ModuleLoader__.load({
           const editable =
             node instanceof Element && node.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]') !== null
           if (editable && node.closest('.dsh-search-in-file-panel') === null) return
-          if (!openRef.current && regionRef.current !== 'preview') return
+          const seeded = seedFromSelection()
+          if (!openRef.current && regionRef.current !== 'preview' && !seeded) return
           event.preventDefault()
           event.stopPropagation()
           setOpen(true)
@@ -817,7 +844,14 @@ window.__ModuleLoader__.load({
             title: '在文件中查找 (Ctrl+F)',
             'aria-label': '在文件中查找',
             'aria-pressed': open,
-            onClick: () => setOpen((value) => !value),
+            onClick: () => {
+              if (openRef.current) {
+                setOpen(false)
+                return
+              }
+              seedFromSelection()
+              setOpen(true)
+            },
           },
           SEARCH_ICON,
         ),
@@ -856,6 +890,13 @@ window.__ModuleLoader__.load({
         const rect = reviewRoot.getBoundingClientRect()
         return rect.width > 40 && rect.height > 20
       }
+
+      /** Seed the input with the diff's current selection, when there is one. */
+      const seedFromSelection = React.useCallback(() => {
+        const seed = selectedTextIn(reviewRoot)
+        if (seed !== '') setQuery(seed)
+        return seed !== ''
+      }, [reviewRoot])
 
       const run = React.useCallback(
         (value, switches, keepIndex) => {
@@ -952,7 +993,8 @@ window.__ModuleLoader__.load({
           const editable =
             node instanceof Element && node.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"]') !== null
           if (editable && node.closest('.dsh-search-in-file-panel') === null) return
-          if (!openRef.current && regionRef.current !== 'review') return
+          const seeded = seedFromSelection()
+          if (!openRef.current && regionRef.current !== 'review' && !seeded) return
           event.preventDefault()
           event.stopPropagation()
           setOpen(true)
@@ -1017,7 +1059,14 @@ window.__ModuleLoader__.load({
             title: '在改动中查找 (Ctrl+F)',
             'aria-label': '在改动中查找',
             'aria-pressed': open,
-            onClick: () => setOpen((value) => !value),
+            onClick: () => {
+              if (openRef.current) {
+                setOpen(false)
+                return
+              }
+              seedFromSelection()
+              setOpen(true)
+            },
           },
           SEARCH_ICON,
         ),
